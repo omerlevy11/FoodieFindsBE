@@ -14,7 +14,7 @@ const initApp = (): Promise<Express> => {
         const db = mongoose.connection;
         db.once("open", () => console.log("Connected to Database"));
         db.on("error", (error) => console.error(error));
-        const url = "mongodb+srv://noambz:OrdMLN4rK4CTuJGA@mycluster.sqyxtxd.mongodb.net/?appName=MyCluster"// process.env.DB_URL;
+        const url = process.env.DB_URL;
         mongoose.connect(url!).then(() => {
             const app = express();
             app.use(bodyParser.json());

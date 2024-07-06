@@ -12,26 +12,28 @@ initApp().then((app) => {
     definition: {
       openapi: "3.0.0",
       info: {
-        title: "Web Advanced Application development 2023 REST API",
+        title: "Web Advanced Application development 2024 REST API",
         version: "1.0.1",
-        description: "REST server including authentication using JWT and refresh token",
+        description:
+          "REST server including authentication using JWT and refresh token",
       },
-      servers: [{ url: "http://localhost:3000", },],
+      servers: [{ url: process.env.URL }],
     },
     apis: ["./src/routes/*.ts"],
   };
   const specs = swaggerJsDoc(options);
   app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('development');
-    http.createServer(app).listen(process.env.PORT);
+  if (process.env.NODE_ENV !== "production") {
+    console.log("development");
+    console.log(process.env.PORT)
+    return http.createServer(app).listen(process.env.PORT);
   } else {
-    console.log('PRODUCTION');
+    console.log("PRODUCTION");
     const options2 = {
-      key: fs.readFileSync('../client-key.pem'),
-      cert: fs.readFileSync('../client-cert.pem')
+      key: fs.readFileSync("../client-key.pem"),
+      cert: fs.readFileSync("../client-cert.pem"),
     };
-    https.createServer(options2, app).listen(process.env.HTTPS_PORT);
+    return https.createServer(options2, app).listen(process.env.HTTPS_PORT);
   }
 });
