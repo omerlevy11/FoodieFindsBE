@@ -4,6 +4,8 @@ import http from 'http';
 import fs from 'fs';
 import swaggerUI from "swagger-ui-express"
 import swaggerJsDoc from "swagger-jsdoc"
+import env from "dotenv"
+env.config();
 
 initApp().then((app) => {
   const options = {
