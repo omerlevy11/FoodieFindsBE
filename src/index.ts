@@ -5,6 +5,8 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import authRoute from "./routes/authentication.route";
 import fileRoute from "./routes/file.route";
+import userRoute from "./routes/user.route";
+import userPostRoute from "./routes/posts.route"
 
 
 const initApp = (): Promise<Express> => {
@@ -24,6 +26,8 @@ const initApp = (): Promise<Express> => {
         res.header("Access-Control-Allow-Credentials", "true");
         next();
       })
+      app.use("/user", userRoute);
+      app.use("/userPost",userPostRoute)
       app.use("/auth", authRoute);
       app.use("/public", express.static("public"));
       app.use("/file", fileRoute);
