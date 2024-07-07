@@ -8,4 +8,3 @@ export type UserPost = {
     userImgUrl: string
     comments?: PostComment[];
 }
-

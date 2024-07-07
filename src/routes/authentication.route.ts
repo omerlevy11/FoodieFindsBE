@@ -8,7 +8,6 @@ import authController from "../controllers/authentication.controller";
 *   description: The Authentication API
 */
 
-
 /**
 * @swagger
 * components:
@@ -61,7 +60,7 @@ import authController from "../controllers/authentication.controller";
 *               $ref: '#/components/schemas/User'
 */
 router.post("/register", authController.register);
-router.post("/google", authController.googleSignin);
+router.post("/google", authController.googleSignIn);
 
 /**
 * @swagger
@@ -83,7 +82,6 @@ router.post("/google", authController.googleSignin);
 *         accessToken: '123cd123x1xx1'
 *         refreshToken: '134r2134cr1x3c'
 */
-
 
 /**
 * @swagger
