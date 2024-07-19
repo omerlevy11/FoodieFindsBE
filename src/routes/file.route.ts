@@ -3,7 +3,8 @@ const router = express.Router();
 import multer from "multer";
 
 // const base = "http://" + process.env.DOMAIN_BASE + ":" + process.env.PORT + "/";
-const base = "http://localhost:3000/";
+// const base = "http://localhost:3000/";
+const base = process.env.URL;
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {

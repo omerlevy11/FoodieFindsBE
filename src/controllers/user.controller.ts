@@ -70,6 +70,7 @@ class UserController extends BaseController<User> {
       res.status(200).send(users);
     }
   }
+
   async getAllUsers(req: AuthResquest, res: Response) {
     try {
       const users = await UserModel.find({

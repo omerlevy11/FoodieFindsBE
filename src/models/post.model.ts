@@ -6,7 +6,6 @@ const PostComment = new mongoose.Schema<PostComment>({
     type: String,
     reuired: true,
   },
-
   responder_id: {
     type: String,
     required: true,
