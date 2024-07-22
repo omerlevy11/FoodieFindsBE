@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 import { Document } from "mongoose";
 import UserModel from "../models/user.model";
 import { User } from "../types";
-
 const client = new OAuth2Client();
 const googleSignIn = async (req: Request, res: Response) => {
   console.log(req.body);
@@ -17,23 +16,26 @@ const googleSignIn = async (req: Request, res: Response) => {
 
     const payload = ticket.getPayload();
     const email = payload?.email;
-
     if (email != null) {
       let user = await UserModel.findOne({ email: email });
-
       if (user == null) {
         user = await UserModel.create({
+          username: email,
+          firstName: payload.given_name,
+          lastName: payload.family_name,
           email: email,
           password: "0",
           imgUrl: payload?.picture,
         });
       }
-
       const tokens = await generateTokens(user);
-      res.status(200).send({
+      return res.status(200).send({
         email: user.email,
         _id: user._id,
         imgUrl: user.imgUrl,
+        username: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         ...tokens,
       });
     }
@@ -44,36 +46,41 @@ const googleSignIn = async (req: Request, res: Response) => {
 
 const register = async (req: Request, res: Response) => {
   const email = req.body.email;
+  const username = req.body.username;
   const password = req.body.password;
+  const firstName = req.body.firstName;
+  const lastName = req.body.lastName;
   const imgUrl = req.body.imgUrl;
-
-  if (!email || !password) {
-    return res.status(400).send("missing email or password");
+  if (!email || !password || !username || !firstName || !lastName) {
+    return res.status(400).send("One required argument missing");
   }
-
   try {
-    const rs = await UserModel.findOne({ email: email });
+    const rs = await UserModel.findOne({ $or: [{ email }, { username }] });
     if (rs != null) {
-      return res.status(406).send("email already exists");
+      return res.status(409).send("Email or username already exists");
     }
     const salt = await bcrypt.genSalt(10);
     const encryptedPassword = await bcrypt.hash(password, salt);
-
     const rs2 = await UserModel.create({
-      email: email,
+      email,
+      username,
       password: encryptedPassword,
-      imgUrl: imgUrl,
+      firstName,
+      lastName,
+      imgUrl,
     });
-
     const tokens = await generateTokens(rs2);
     res.status(201).send({
       email: rs2.email,
+      username: rs2.username,
+      firstName: rs2.firstName,
+      lastName: rs2.lastName,
       _id: rs2._id,
       imgUrl: rs2.imgUrl,
       ...tokens,
     });
   } catch (err) {
-    return res.status(400).send("error missing email or password");
+    return res.status(400).send("Error missing email or password or username");
   }
 };
 
@@ -101,30 +108,31 @@ const generateTokens = async (user: Document & User) => {
 };
 
 const login = async (req: Request, res: Response) => {
-  const email = req.body.email;
+  const username = req.body.username;
   const password = req.body.password;
-
-  if (!email || !password) {
-    return res.status(400).send("missing email or password");
+  if (!username || !password) {
+    return res.status(400).send("Missing username or password");
   }
-
   try {
-    const user = await UserModel.findOne({ email: email });
+    const user = await UserModel.findOne({ username });
 
     if (user == null) {
-      return res.status(401).send("email or password incorrect");
+      return res.status(401).send("Username or password incorrect");
     }
 
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) {
-      return res.status(401).send("email or password incorrect");
+      return res.status(401).send("Username or password incorrect");
     }
 
     const tokens = await generateTokens(user);
-    return res.status(200).send(tokens);
+    return res.status(200).send({
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    });
   } catch (err) {
-    return res.status(400).send("error missing email or password");
+    return res.status(400).send("Error missing email or password");
   }
 };
 
@@ -156,7 +164,7 @@ const logout = async (req: Request, res: Response) => {
             (t) => t !== refreshToken
           );
           await userDb.save();
-          return res.sendStatus(200);
+          return res.status(200).send("Logout succeeded");
         }
       } catch (err) {
         res.sendStatus(401).send(err.message);
@@ -176,7 +184,7 @@ const refresh = async (req: Request, res: Response) => {
     async (err, user: { _id: string }) => {
       if (err) {
         console.log(err);
-        return res.sendStatus(401);
+        return res.status(401).send("Refresh token invalid");
       }
       try {
         const userDb = await UserModel.findOne({ _id: user._id });
@@ -187,7 +195,7 @@ const refresh = async (req: Request, res: Response) => {
         ) {
           userDb.refreshTokens = [];
           await userDb.save();
-          return res.sendStatus(401);
+          return res.status(401).send("Refresh token invalid");
         }
         const accessToken = jwt.sign(
           { _id: user._id },
@@ -205,7 +213,7 @@ const refresh = async (req: Request, res: Response) => {
         await userDb.save();
         return res.status(200).send({
           accessToken: accessToken,
-          refreshToken: refreshToken,
+          refreshToken: newRefreshToken,
         });
       } catch (err) {
         res.sendStatus(401).send(err.message);
