@@ -126,38 +126,6 @@ router.get(
 
 /**
  * @swagger
- * /user/{id}:
- *   get:
- *     tags: [User]
- *     summary: Get user by id
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - name: id
- *         in: path
- *         description: ID of the user to retrieve
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: The new user
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       401:
- *         description: Unauthorized - Invalid token or token expired
- *         content:
- *           application/json:
- *             schema:
- *               type: string
- *               example: "Unauthorized - Invalid token or token expired"
- */
-router.get("/:id", authMiddleware, userController.getById.bind(userController));
-
-/**
- * @swagger
  * /user/filter/{fullName}:
  *   get:
  *     tags: [User]
@@ -194,7 +162,7 @@ router.get("/:id", authMiddleware, userController.getById.bind(userController));
  *               example: "Couldnt find by name and last name"
  */
 router.get(
-  "/filter/:fullName",
+  "/filter",
   authMiddleware,
   userController.getUserByName.bind(userController)
 );
@@ -308,5 +276,37 @@ router.delete(
  *               example: "Unauthorized - Invalid token or token expired"
  */
 router.get("/", authMiddleware, userController.getByToken.bind(userController));
+
+/**
+ * @swagger
+ * /user/{id}:
+ *   get:
+ *     tags: [User]
+ *     summary: Get user by id
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the user to retrieve
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: The new user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized - Invalid token or token expired
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: string
+ *               example: "Unauthorized - Invalid token or token expired"
+ */
+router.get("/:id", authMiddleware, userController.getById.bind(userController));
 
 export default router;

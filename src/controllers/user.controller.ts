@@ -41,7 +41,7 @@ class UserController extends BaseController<User> {
   //using contains and not match
   async getUserByName(req: Request, res: Response) {
     //splits the first space from the string incase someone has last name with spaces
-    const [first_name, last_name] = req.params.fullName
+    const [first_name, last_name] = (req.query.search as string ?? '' )
       .replace(/\s+/, "\x01")
       .split("\x01");
 
