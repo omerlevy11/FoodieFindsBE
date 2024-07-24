@@ -7,7 +7,6 @@ import UserModel from "../models/user.model";
 import { User } from "../types";
 const client = new OAuth2Client();
 const googleSignIn = async (req: Request, res: Response) => {
-  console.log(req.body);
   try {
     const ticket = await client.verifyIdToken({
       idToken: req.body.credential,
@@ -16,8 +15,10 @@ const googleSignIn = async (req: Request, res: Response) => {
 
     const payload = ticket.getPayload();
     const email = payload?.email;
+
     if (email != null) {
       let user = await UserModel.findOne({ email: email });
+
       if (user == null) {
         user = await UserModel.create({
           username: email,
@@ -28,6 +29,7 @@ const googleSignIn = async (req: Request, res: Response) => {
           imgUrl: payload?.picture,
         });
       }
+
       const tokens = await generateTokens(user);
       return res.status(200).send({
         email: user.email,
@@ -51,14 +53,18 @@ const register = async (req: Request, res: Response) => {
   const firstName = req.body.firstName;
   const lastName = req.body.lastName;
   const imgUrl = req.body.imgUrl;
+
   if (!email || !password || !username || !firstName || !lastName) {
     return res.status(400).send("One required argument missing");
   }
+
   try {
     const rs = await UserModel.findOne({ $or: [{ email }, { username }] });
+
     if (rs != null) {
       return res.status(409).send("Email or username already exists");
     }
+
     const salt = await bcrypt.genSalt(10);
     const encryptedPassword = await bcrypt.hash(password, salt);
     const rs2 = await UserModel.create({
@@ -69,6 +75,7 @@ const register = async (req: Request, res: Response) => {
       lastName,
       imgUrl,
     });
+
     const tokens = await generateTokens(rs2);
     res.status(201).send({
       email: rs2.email,
