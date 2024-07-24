@@ -35,9 +35,10 @@ const googleSignIn = async (req: Request, res: Response) => {
         email: user.email,
         _id: user._id,
         imgUrl: user.imgUrl,
-        username: user.email,
+        username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
+        isGoogleSignIn: true,
         ...tokens,
       });
     }
